@@ -10,7 +10,7 @@ import sharp from 'sharp';
 const images = express.Router();
 
 // STEP 3 : create route functionality
-images.get('/', async (req, res) => {
+images.get('/', async (req, res): Promise<void> => {
   // Query parameters - Image name - height - width
   const image: unknown = req.query.image as string;
   const imageHeight = Number(req.query.height) as number;
