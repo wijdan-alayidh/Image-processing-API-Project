@@ -30,14 +30,14 @@ describe('Test endpoints -> /api/images responses', (): void => {
   });
   // Test with sending only false image name
   describe('Test endpoints -> /api/images/?image : with sending only false image name responses', (): void => {
-    it('get /api/images?image', async () => {
+    it('get /api/images?image', async (): Promise<void> => {
       const response = await request.get('/api/images/?image=fjordd');
       expect(response.status).toBe(404);
     });
   });
   // Test with sending image name with image dimentions
   describe('Test endpoints -> /api/images/?image&width&height : sending image name with image dimentions responses', (): void => {
-    it('get /api/images?image', async () => {
+    it('get /api/images?image', async (): Promise<void> => {
       const response = await request.get(
         '/api/images/?image=fjord&height=500&width=500'
       );
@@ -47,7 +47,7 @@ describe('Test endpoints -> /api/images responses', (): void => {
 
   // Test with sending image name with image one dimention
   describe('Test endpoints -> /api/images/?image&width&height : sending image name with image one dimention responses', (): void => {
-    it('get /api/images?image', async () => {
+    it('get /api/images?image', async (): Promise<void> => {
       const response = await request.get('/api/images/?image=fjord&height=500');
       expect(response.status).toBe(200);
     });

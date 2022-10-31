@@ -1,20 +1,21 @@
 /*** --- Steps to create route --- ***/
 
 // STEP 1 : Import Express
-import express from 'express';
+import express, { Request, Response } from 'express';
 import fs from 'fs-extra';
 import path from 'path';
-import sharp from 'sharp';
+import validateInputIsNumber from '../../utilites/validateInputs';
+import resizeImage from '../../utilites/resizeImage';
 
 // STEP 2 : use router function from express
 const images = express.Router();
 
 // STEP 3 : create route functionality
-images.get('/', async (req, res): Promise<void> => {
+images.get('/', async (req: Request, res: Response): Promise<void> => {
   // Query parameters - Image name - height - width
-  const image: unknown = req.query.image as string;
-  const imageHeight = Number(req.query.height) as number;
-  const imageWidth = Number(req.query.width) as number;
+  const image: unknown = req.query.image;
+  const imageHeight = Number(req.query.height);
+  const imageWidth = req.query.width;
 
   /* --- Validate query inputs --- */
 
@@ -46,16 +47,27 @@ images.get('/', async (req, res): Promise<void> => {
 
         // CASE 2: If URL Query contains image name and image dimensions
       } else if (queryHasHeight && queryHasWidth) {
-        // Resize the image based on image dimensions passed to the URL
-        await sharp(`${imagePathFull}/${image}.jpg`)
-          .resize(imageWidth, imageHeight)
-          .toFile(
-            `${imagePathThumb}/${image}_${imageHeight}_${imageWidth}.jpg`
+        // Validate height and width is numbers
+        const validHeight: boolean = validateInputIsNumber(imageHeight);
+        const validWidth: boolean = validateInputIsNumber(imageWidth);
+
+        if (validHeight && validWidth) {
+          // Resize the image based on image dimensions passed to the URL
+
+          const resizedImage = await resizeImage(
+            image as string,
+            imageWidth,
+            imageHeight
           );
-        // Sending the resized image to the browser
-        res.sendFile(
-          `${imagePathThumb}/${image}_${imageHeight}_${imageWidth}.jpg`
-        );
+          // Sending the resized image to the browser
+          try {
+            res.sendFile(resizedImage);
+          } catch (error) {
+            console.error(error);
+          }
+        } else {
+          res.send('Please input correct height and width');
+        }
         // Sending the Original image if the URL does not contain image dimensions
       } else {
         res.sendFile(`${imagePathFull}/${image}.jpg`);

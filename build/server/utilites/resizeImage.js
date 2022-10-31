@@ -1,5 +1,4 @@
 'use strict';
-/*** --- Steps to create route --- ***/
 var __awaiter =
   (this && this.__awaiter) ||
   function (thisArg, _arguments, P, generator) {
@@ -139,109 +138,49 @@ var __importDefault =
     return mod && mod.__esModule ? mod : { default: mod };
   };
 Object.defineProperty(exports, '__esModule', { value: true });
-// STEP 1 : Import Express
-var express_1 = __importDefault(require('express'));
-var fs_extra_1 = __importDefault(require('fs-extra'));
 var path_1 = __importDefault(require('path'));
-var validateInputs_1 = __importDefault(
-  require('../../utilites/validateInputs')
-);
-var resizeImage_1 = __importDefault(require('../../utilites/resizeImage'));
-// STEP 2 : use router function from express
-var images = express_1.default.Router();
-// STEP 3 : create route functionality
-images.get('/', function (req, res) {
+var sharp_1 = __importDefault(require('sharp'));
+// This function will work on resizing images if url query has a valid dimensions
+var resizeImage = function (image, width, height) {
   return __awaiter(void 0, void 0, void 0, function () {
-    var image,
-      imageHeight,
-      imageWidth,
-      queryHasImage,
-      queryHasHeight,
-      queryHasWidth,
-      currentDir,
+    var currentDir,
       fullImagesDir,
       thumbImagesDir,
       imagePathFull,
       imagePathThumb,
-      validHeight,
-      validWidth,
-      resizedImage;
+      newImage;
     return __generator(this, function (_a) {
       switch (_a.label) {
         case 0:
-          image = req.query.image;
-          imageHeight = Number(req.query.height);
-          imageWidth = req.query.width;
-          queryHasImage = 'image' in req.query;
-          queryHasHeight = 'height' in req.query;
-          queryHasWidth = 'width' in req.query;
           currentDir = __dirname;
-          fullImagesDir = '../../../../assets/images/full';
-          thumbImagesDir = '../../../../assets/images/thumb';
+          fullImagesDir = '../../../assets/images/full';
+          thumbImagesDir = '../../../assets/images/thumb';
           imagePathFull = path_1.default.join(currentDir, fullImagesDir);
           imagePathThumb = path_1.default.join(currentDir, thumbImagesDir);
-          if (!queryHasImage) return [3 /*break*/, 8];
-          if (
-            !fs_extra_1.default.existsSync(
-              ''.concat(imagePathFull, '/').concat(image, '.jpg')
-            )
-          )
-            return [3 /*break*/, 7];
-          if (
-            !fs_extra_1.default.existsSync(
-              ''
-                .concat(imagePathThumb, '/')
-                .concat(image, '_')
-                .concat(imageHeight, '_')
-                .concat(imageWidth, '.jpg')
-            )
-          )
-            return [3 /*break*/, 1];
-          res.sendFile(
-            ''
-              .concat(imagePathThumb, '/')
-              .concat(image, '_')
-              .concat(imageHeight, '_')
-              .concat(imageWidth, '.jpg')
-          );
-          return [3 /*break*/, 6];
-        case 1:
-          if (!(queryHasHeight && queryHasWidth)) return [3 /*break*/, 5];
-          validHeight = (0, validateInputs_1.default)(imageHeight);
-          validWidth = (0, validateInputs_1.default)(imageWidth);
-          if (!(validHeight && validWidth)) return [3 /*break*/, 3];
           return [
             4 /*yield*/,
-            (0, resizeImage_1.default)(image, imageWidth, imageHeight),
+            (0, sharp_1.default)(
+              ''.concat(imagePathFull, '/').concat(image, '.jpg')
+            )
+              .resize(Number(width), Number(height))
+              .toFile(
+                ''
+                  .concat(imagePathThumb, '/')
+                  .concat(image, '_')
+                  .concat(height, '_')
+                  .concat(width, '.jpg')
+              ),
           ];
-        case 2:
-          resizedImage = _a.sent();
-          console.log(resizedImage);
-          // Sending the resized image to the browser
-          try {
-            res.sendFile(resizedImage);
-          } catch (error) {
-            console.error(error);
-          }
-          return [3 /*break*/, 4];
-        case 3:
-          res.send('Please input correct height and width');
-          _a.label = 4;
-        case 4:
-          return [3 /*break*/, 6];
-        case 5:
-          res.sendFile(''.concat(imagePathFull, '/').concat(image, '.jpg'));
-          _a.label = 6;
-        case 6:
-          return [3 /*break*/, 8];
-        case 7:
-          res.status(404).send('Image not found');
-          _a.label = 8;
-        case 8:
-          return [2 /*return*/];
+        case 1:
+          _a.sent();
+          newImage = ''
+            .concat(imagePathThumb, '/')
+            .concat(image, '_')
+            .concat(height, '_')
+            .concat(width, '.jpg');
+          return [2 /*return*/, newImage];
       }
     });
   });
-});
-// STEP 4 : export route
-exports.default = images;
+};
+exports.default = resizeImage;
