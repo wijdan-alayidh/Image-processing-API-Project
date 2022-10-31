@@ -15,7 +15,7 @@ images.get('/', async (req: Request, res: Response): Promise<void> => {
   // Query parameters - Image name - height - width
   const image: unknown = req.query.image;
   const imageHeight = Number(req.query.height);
-  const imageWidth = req.query.width;
+  const imageWidth = Number(req.query.width);
 
   /* --- Validate query inputs --- */
 
@@ -52,29 +52,54 @@ images.get('/', async (req: Request, res: Response): Promise<void> => {
         const validWidth: boolean = validateInputIsNumber(imageWidth);
 
         if (validHeight && validWidth) {
-          // Resize the image based on image dimensions passed to the URL
+          if (imageHeight && imageWidth >= 1) {
+            // Resize the image based on image dimensions passed to the URL
 
-          const resizedImage = await resizeImage(
-            image as string,
-            imageWidth,
-            imageHeight
-          );
-          // Sending the resized image to the browser
-          try {
-            res.sendFile(resizedImage);
-          } catch (error) {
-            console.error(error);
+            const resizedImage = await resizeImage(
+              image as string,
+              imageWidth,
+              imageHeight
+            );
+            // Sending the resized image to the browser
+            try {
+              res.sendFile(resizedImage);
+            } catch (error) {
+              console.error(error);
+            }
+          } else {
+            console.log(
+              'The values of width and height must be a positive numbers'
+            );
+            res.send(
+              'The values of width and height must be a positive numbers'
+            );
           }
         } else {
-          res.send('Please input correct height and width');
+          console.error('Please input correct Image height and width values ');
+          res.send('Please input correct Image height and width values ');
         }
         // Sending the Original image if the URL does not contain image dimensions
+      } else if (queryHasHeight || queryHasWidth) {
+        console.log(
+          'Image width and height values both are required for image resizing'
+        );
+        res.send(
+          'Image width and height values both are required for image resizing'
+        );
       } else {
         res.sendFile(`${imagePathFull}/${image}.jpg`);
       }
     } else {
+      console.error('Image not found');
       res.status(404).send('Image not found');
     }
+  } else {
+    console.error(
+      'Image name missing : Please input the image name to complete the process'
+    );
+    res.send(
+      'Image name missing : Please input the image name to complete the process'
+    );
   }
 });
 
